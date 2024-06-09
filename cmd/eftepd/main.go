@@ -1,24 +1,30 @@
 package main
 
 import (
+	"context"
+	"eftep/pkg/commons"
 	"eftep/pkg/server"
-	"log"
+	"fmt"
 	"os"
 	"os/signal"
 	"syscall"
+
+	config "eftep/pkg/config/server"
+	log "eftep/pkg/log"
 )
 
-var IP_ADDR = [4]byte{0, 0, 0, 0}
-
 func main() {
+	ctx := context.WithValue(context.Background(), log.SessionIDKey, "eftep")
 	// Setup logging to a /var/log/eftep.log file
-	if err := setupLogs(); err != nil {
-		log.Panicf("Failed to setup logs: %v", err)
+	logFile, err := log.SetupLogs()
+	if err != nil {
+		panic(fmt.Sprintf("Failed to setup logs: %v\n", err))
 	}
+	defer logFile.Close()
 
 	// If the work directory doesn't exist, create it
-	if _, err := os.Stat(server.WORKDIR); os.IsNotExist(err) {
-		os.Mkdir(server.WORKDIR, 0755)
+	if _, err := os.Stat(config.WORKDIR); os.IsNotExist(err) {
+		os.Mkdir(config.WORKDIR, 0755)
 	}
 
 	// Ignore SIGHUP signals to work in daemon mode
@@ -27,18 +33,28 @@ func main() {
 	// Setup the socket and start listening for connections
 	socket, err := setupSocket()
 	if err != nil {
-		log.Fatalf("Failed to setup socket: %v", err)
+		log.Error(ctx, "setup socket", err)
+		panic("Failed to setup socket")
 	}
+
+	// Start the discovery service
+	go server.DiscoveryService()
 
 	// Start accepting connections, and handle them in a separate goroutines
 	// No need for a worker pool, as the server is not expected to handle a lot of clients
 	for {
 		client, addr, err := syscall.Accept(socket)
 		if err != nil {
-			log.Println("[Error] Failed to accept connection:", err)
+			log.Error(ctx, "socket accept", err)
 		}
-		log.Println("[Info] Accepted connection from:", addr)
-		go server.HandleClient(client)
+
+		parsedAddr := commons.ParseIpAddr(addr)
+		sessId := server.RandId(4)
+		log.Info(ctx, "accept_new_client", fmt.Sprintf("%s with session: %s", parsedAddr, sessId))
+
+		cctx := context.WithValue(ctx, log.ClientIPKey, parsedAddr)
+		cctx = context.WithValue(cctx, log.SessionIDKey, sessId)
+		go server.HandleClient(cctx, client)
 	}
 }
 
@@ -57,8 +73,8 @@ func setupSocket() (int, error) {
 	}
 
 	sockaddr := syscall.SockaddrInet4{
-		Addr: IP_ADDR,
-		Port: server.PORT,
+		Addr: config.IP_ADDR,
+		Port: config.EFTEP_PORT,
 	}
 
 	if err = syscall.Bind(socket, &sockaddr); err != nil {
@@ -70,16 +86,4 @@ func setupSocket() (int, error) {
 	}
 
 	return socket, nil
-}
-
-func setupLogs() error {
-	logFile, err := os.OpenFile("/var/log/eftep.log", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
-	if err != nil {
-		return err
-	}
-	defer logFile.Close()
-
-	log.SetOutput(logFile)
-
-	return nil
 }

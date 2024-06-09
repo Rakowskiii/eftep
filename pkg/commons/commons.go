@@ -4,7 +4,12 @@ import (
 	"encoding/binary"
 	"fmt"
 	"syscall"
+	"time"
 )
+
+const DISCOVERY_MESSAGE = "WHERE_ARE_YOU"
+const DISCOVERY_RESPONSE = "I_AM_EFTEP"
+const DISCOVERY_TIMEOUT_SECS = 1 * time.Second
 
 const (
 	ListDir    = 0
@@ -40,4 +45,23 @@ func Min(a, b uint32) uint32 {
 		return a
 	}
 	return b
+}
+
+func ParseIpAddr(addr syscall.Sockaddr) string {
+	switch addr := addr.(type) {
+	case *syscall.SockaddrInet4:
+		return parseInetIp4Addr(addr)
+	case *syscall.SockaddrInet6:
+		return parseInetIp6Addr(addr)
+	default:
+		return fmt.Sprintf("%s", addr)
+	}
+}
+
+func parseInetIp4Addr(addr *syscall.SockaddrInet4) string {
+	return fmt.Sprintf("%v.%v.%v.%v", addr.Addr[0], addr.Addr[1], addr.Addr[2], addr.Addr[3])
+}
+
+func parseInetIp6Addr(addr *syscall.SockaddrInet6) string {
+	return fmt.Sprintf("%v.%v.%v.%v", addr.Addr[0], addr.Addr[1], addr.Addr[2], addr.Addr[3])
 }
