@@ -1,0 +1,16 @@
+version: '3.8'
+
+services:
+  eftep:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    deploy:
+      replicas: 4
+    networks:
+      - eftep
+
+
+networks:
+  eftep:
+    driver: bridge
