@@ -8,12 +8,7 @@ import (
 )
 
 func handleListDir(socket int) {
-	// Send the command to the server
-	command := []byte{0, 0, 0, 0, 0}
-	if _, err := syscall.Write(socket, command); err != nil {
-		fmt.Println("Failed to send command to server:", err)
-		return
-	}
+	sendCommand(socket, commons.ListDir, nil)
 
 	// Read the response from the server
 	responseSize := make([]byte, 4)

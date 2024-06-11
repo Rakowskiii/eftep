@@ -9,18 +9,20 @@ import (
 )
 
 var Socket int
+var CurrentConnection string
 
 const (
-	Exit       string = "q"
-	Connect    string = "conn"
-	Disconnect string = "dc"
-	Help       string = "?"
-	GetFile    string = "get"
-	PutFile    string = "put"
-	DeleteFile string = "del"
-	ListDir    string = "dir"
-	RenameFile string = "mv"
-	Discover   string = "find"
+	Exit          string = "q"
+	Connect       string = "conn"
+	ConnectManual string = "connm"
+	Disconnect    string = "dc"
+	Help          string = "?"
+	GetFile       string = "get"
+	PutFile       string = "put"
+	DeleteFile    string = "del"
+	ListDir       string = "dir"
+	RenameFile    string = "mv"
+	Discover      string = "find"
 )
 
 func Run() {
@@ -28,48 +30,53 @@ func Run() {
 		os.Mkdir(config.DOWNLOAD_DIR, 0755)
 	}
 
-	scanner := bufio.NewScanner(os.Stdin)
-	fmt.Println("Eftep Repl")
+	fmt.Println("Eftep Repl -- v0.1")
 	for {
-		fmt.Print("> ")
-		if !scanner.Scan() {
-			break
+		command, err := awaitCommand()
+		if err != nil {
+			fmt.Println("Failed to read command:", err)
+			continue
 		}
-		input := strings.TrimSpace(scanner.Text())
 
-		handleCommand(input)
-	}
-
-	if err := scanner.Err(); err != nil {
-		fmt.Fprintln(os.Stderr, "Error reading input:", err)
+		handleCommand(command)
 	}
 }
 
-func handleCommand(line string) {
-	tokens := strings.Split(line, " ")
-	if len(tokens) == 0 {
-		fmt.Println("No command entered")
-		return
+func awaitCommand() (string, error) {
+	prompt()
+	scanner := bufio.NewScanner(os.Stdin)
+	if !scanner.Scan() {
+		return "", fmt.Errorf("failed to read input: %v", scanner.Err())
 	}
-	fmt.Println("Command:", tokens[0])
+	input := strings.TrimSpace(scanner.Text())
+	tokens := strings.Split(input, " ")
 
-	handler, found := commandHandlers[tokens[0]]
+	return tokens[0], nil
+}
+
+func handleCommand(command string) {
+	handler, found := commandHandlers[command]
 	if found {
 		handler()
 	} else {
-		fmt.Println("Unknown command:", tokens[0])
+		fmt.Printf("%s is not recognized command. Try %v to get list of available commands.\n", command, Help)
 	}
 }
 
 var commandHandlers = map[string]func(){
-	Connect:    handleConnect,
-	Disconnect: handleDisconnect,
-	Help:       showHelp,
-	GetFile:    func() { handleIfConnected(handleGetFile) },
-	PutFile:    func() { handleIfConnected(handleFileUpload) },
-	DeleteFile: func() { handleIfConnected(handleDeleteFile) },
-	ListDir:    func() { handleIfConnected(handleListDir) },
-	RenameFile: func() { handleIfConnected(handleRenameFile) },
-	Exit:       exit,
-	Discover:   handleDiscover,
+	Connect:       handleConnect,
+	ConnectManual: handleConnectManual,
+	Disconnect:    handleDisconnect,
+	Help:          showHelp,
+	GetFile:       func() { handleIfConnected(handleGetFile) },
+	PutFile:       func() { handleIfConnected(handleFileUpload) },
+	DeleteFile:    func() { handleIfConnected(handleDeleteFile) },
+	ListDir:       func() { handleIfConnected(handleListDir) },
+	RenameFile:    func() { handleIfConnected(handleRenameFile) },
+	Exit:          exit,
+	Discover:      handleDiscover,
+}
+
+func prompt() {
+	fmt.Printf("%s> ", CurrentConnection)
 }

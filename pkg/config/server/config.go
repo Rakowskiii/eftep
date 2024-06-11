@@ -8,7 +8,7 @@ var (
 	LOGFILE        = "/var/log/eftep.log"
 )
 
-var MULTICAST_GROUPS = [2][4]byte{
+var MULTICAST_GROUPS = [][4]byte{
 	{224, 0, 1, 1},
 	{224, 0, 1, 2},
 }

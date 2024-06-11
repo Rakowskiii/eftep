@@ -10,9 +10,12 @@ import (
 	log "eftep/pkg/log"
 )
 
-func DiscoveryService() {
+var ServiceName string
+
+func DiscoveryService(name string) {
+	ServiceName = name
 	ctx := context.WithValue(context.Background(), log.SessionIDKey, "discovery")
-	log.Info(ctx, "discovery", "starting the service")
+	log.Info(ctx, "discovery", fmt.Sprintf("starting the service with name %s", ServiceName))
 	socket := setupSocket(ctx)
 
 	defer syscall.Close(socket)
@@ -73,7 +76,7 @@ func handleDiscoveryMessage(ctx context.Context, socket int, buf []byte) {
 	}
 
 	// Respond to the discovery message
-	message := commons.DISCOVERY_RESPONSE + ":" + fmt.Sprintf("%d", config.EFTEP_PORT)
+	message := commons.DISCOVERY_RESPONSE + ":" + ServiceName + ":" + fmt.Sprintf("%d", config.EFTEP_PORT)
 	err = syscall.Sendto(socket, []byte(message), 0, addr)
 	if err != nil {
 		log.Error(ctx, "udp_response", err)

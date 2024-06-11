@@ -33,18 +33,14 @@ func handleFileUpload(socket int) {
 		return
 	}
 
-	message := commons.MakeMessage([]byte(filepath.Base(file.Name())))
-
 	// Send the command to the server
-	message = append([]byte{commons.PutFile}, message...)
-	if _, err := syscall.Write(socket, message); err != nil {
+	if err := sendCommand(socket, commons.PutFile, []byte(filepath.Base(file.Name()))); err != nil {
 		fmt.Println("Failed to send command to server:", err)
 		return
 	}
 
 	fileSize := make([]byte, 4)
 	size := fileInfo.Size()
-	// encode the file size as a 4-byte big endian integer
 	binary.BigEndian.PutUint32(fileSize, uint32(size))
 	if _, err := syscall.Write(socket, fileSize); err != nil {
 		fmt.Println("Failed to send file size to server:", err)
@@ -81,12 +77,5 @@ func handleFileUpload(socket int) {
 	fmt.Println("File upload complete, waiting for server response")
 
 	// Read the response from the server
-	response := make([]byte, 4096)
-	n, err := syscall.Read(socket, response)
-	if err != nil {
-		fmt.Println("Failed to read response from server:", err)
-		return
-	}
-
-	fmt.Println("Response from server:", string(response[:n]))
+	handleResponse(socket)
 }

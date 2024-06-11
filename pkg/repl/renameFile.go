@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"os"
 	"strings"
-	"syscall"
 )
 
 func handleRenameFile(socket int) {
@@ -19,24 +18,11 @@ func handleRenameFile(socket int) {
 	}
 	names := strings.Replace(scanner.Text(), " ", ":", 1)
 
-	// convert names to bytes
-	namesBytes := []byte(names)
-	message := commons.MakeMessage(namesBytes)
-
-	// Send the command to the server
-	message = append([]byte{commons.RenameFile}, message...)
-	if _, err := syscall.Write(socket, message); err != nil {
+	if err := sendCommand(socket, commons.RenameFile, []byte(names)); err != nil {
 		fmt.Println("Failed to send command to server:", err)
 		return
 	}
 
 	// Read the response from the server
-	response := make([]byte, 4096)
-	n, err := syscall.Read(socket, response)
-	if err != nil {
-		fmt.Println("Failed to read response from server:", err)
-		return
-	}
-
-	fmt.Println("Response from server:", string(response[:n]))
+	handleResponse(socket)
 }

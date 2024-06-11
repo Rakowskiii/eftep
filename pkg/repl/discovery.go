@@ -8,6 +8,14 @@ import (
 	"syscall"
 )
 
+var KnownHosts = make(map[string]bool)
+
+const (
+	DiscoveryPart = 0
+	NamePart      = 1
+	PortPart      = 2
+)
+
 func handleDiscover() {
 	socket, err := syscall.Socket(syscall.AF_INET, syscall.SOCK_DGRAM, syscall.IPPROTO_UDP)
 	if err != nil {
@@ -45,30 +53,38 @@ func handleDiscover() {
 	sendMulticastDiscovery(socket, config.MULTICAST_GROUPS[:])
 	fmt.Println("Sent multicast discovery message")
 
+	// Reset the known hosts
+	KnownHosts = make(map[string]bool)
+
 	// Listen for responses
 	for {
 		buf := make([]byte, 4096)
 		n, addr, err := syscall.Recvfrom(socket, buf, 0)
 		if err != nil {
 			fmt.Println("Finished waiting for responses")
-			return
+			break
 		}
 
-		// Parse the response (CONFIRMATION:PORT) to confirm it is a discovery response, and get the server port
+		// Parse the response (CONFIRMATION:NAME:PORT) to confirm it is a discovery response, and get the server port
 		response := strings.Split(string(buf[:n]), ":")
 
-		if len(response) != 2 {
+		if len(response) != 3 {
 			// Ignore messages that are not valid discovery responses
 			continue
 		}
 
-		if response[0] != commons.DISCOVERY_RESPONSE {
+		if response[DiscoveryPart] != commons.DISCOVERY_RESPONSE {
 			// Ignore messages that are not discovery responses
 			continue
 		}
 
-		fmt.Printf("Discovered: %s:%s\n", commons.ParseIpAddr(addr), response[1])
+		host := fmt.Sprintf("%s@%s:%s", response[NamePart], commons.ParseIpAddr(addr), response[PortPart])
+		if _, alreadyKnow := KnownHosts[host]; !alreadyKnow {
+			fmt.Println(" Discovered host:", host)
+			KnownHosts[host] = true
+		}
 	}
+
 }
 
 func sendMulticastDiscovery(socket int, addrs [][4]byte) {

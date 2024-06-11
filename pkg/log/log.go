@@ -36,7 +36,7 @@ func SetupLogs() (*os.File, error) {
 
 	log.SetOutput(logFile)
 
-	Info(context.Background(), "setup logs", fmt.Sprintf("into file %s", config.LOGFILE))
+	Info(context.Background(), "setup_logs", fmt.Sprintf("into file %s", config.LOGFILE))
 
 	return logFile, nil
 }

@@ -20,16 +20,9 @@ func handleGetFile(socket int) {
 		return
 	}
 
-	fileName := scanner.Text()
+	fileName := scanner.Bytes()
 
-	message := commons.MakeMessage([]byte(fileName))
-
-	// Send the command to the server
-	message = append([]byte{commons.GetFile}, message...)
-	if _, err := syscall.Write(socket, message); err != nil {
-		fmt.Println("Failed to send command to server:", err)
-		return
-	}
+	sendCommand(socket, commons.GetFile, fileName)
 
 	// Read the file size
 	fileSize := make([]byte, 4)
@@ -48,7 +41,7 @@ func handleGetFile(socket int) {
 	fmt.Println("Receiving file of length:", size)
 
 	// Create the file
-	file, err := os.Create(config.DOWNLOAD_DIR + "/" + (fileName))
+	file, err := os.Create(config.DOWNLOAD_DIR + "/" + string(fileName))
 	if err != nil {
 		fmt.Println("Failed to create file:", err)
 		return

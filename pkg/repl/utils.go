@@ -15,6 +15,21 @@ func sendCommand(socket int, command byte, data []byte) error {
 	return err
 }
 
+func awaitResponse(socket int) (string, error) {
+	response := make([]byte, 4096)
+	n, err := syscall.Read(socket, response)
+	return string(response[:n]), err
+}
+
+func handleResponse(socket int) {
+	response, err := awaitResponse(socket)
+	if err != nil {
+		fmt.Println("Failed to read response from server:", err)
+		return
+	}
+	fmt.Println("Response from server:", response)
+}
+
 func handleIfConnected(handler func(int)) {
 	if Socket == 0 {
 		fmt.Println("Not connected to server")

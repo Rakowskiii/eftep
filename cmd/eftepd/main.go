@@ -5,6 +5,7 @@ import (
 	"eftep/pkg/commons"
 	"eftep/pkg/server"
 	"fmt"
+	"math/rand"
 	"os"
 	"os/signal"
 	"syscall"
@@ -14,7 +15,10 @@ import (
 )
 
 func main() {
+	serverName := prepareName()
+
 	ctx := context.WithValue(context.Background(), log.SessionIDKey, "eftep")
+
 	// Setup logging to a /var/log/eftep.log file
 	logFile, err := log.SetupLogs()
 	if err != nil {
@@ -38,7 +42,7 @@ func main() {
 	}
 
 	// Start the discovery service
-	go server.DiscoveryService()
+	go server.DiscoveryService(serverName)
 
 	// Start accepting connections, and handle them in a separate goroutines
 	// No need for a worker pool, as the server is not expected to handle a lot of clients
@@ -50,7 +54,7 @@ func main() {
 
 		parsedAddr := commons.ParseIpAddr(addr)
 		sessId := server.RandId(4)
-		log.Info(ctx, "accept_new_client", fmt.Sprintf("%s with session: %s", parsedAddr, sessId))
+		log.Info(ctx, "accept_client", fmt.Sprintf("%s with session: %s", parsedAddr, sessId))
 
 		cctx := context.WithValue(ctx, log.ClientIPKey, parsedAddr)
 		cctx = context.WithValue(cctx, log.SessionIDKey, sessId)
@@ -86,4 +90,35 @@ func setupSocket() (int, error) {
 	}
 
 	return socket, nil
+}
+
+func prepareName() string {
+	baseName := "eftep-"
+
+	if len(os.Args) > 1 {
+		return baseName + os.Args[1]
+	}
+
+	return baseName + defaultNames[rand.Intn(len(defaultNames))]
+}
+
+var defaultNames = []string{
+	"ferret",
+	"rabbit",
+	"fox",
+	"raccoon",
+	"squirrel",
+	"chinchilla",
+	"koala",
+	"panda",
+	"wolf",
+	"bear",
+	"otter",
+	"hedgehog",
+	"mink",
+	"weasel",
+	"lynx",
+	"ermine",
+	"badger",
+	"opossum",
 }

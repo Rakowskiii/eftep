@@ -4,7 +4,6 @@ import (
 	"context"
 	"eftep/pkg/commons"
 	"eftep/pkg/log"
-	"errors"
 	"fmt"
 	"syscall"
 )
@@ -33,7 +32,7 @@ func HandleClient(ctx context.Context, client int) {
 		case commons.RenameFile:
 			handleRenameFile(ctx, client, int(dataLen))
 		default:
-			log.Error(ctx, "handle command", errors.New(fmt.Sprintf("unknown action: %d", command)))
+			log.Error(ctx, "handle command", fmt.Errorf("unknown action: %d", command))
 		}
 	}
 }
