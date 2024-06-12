@@ -29,7 +29,6 @@ WORKDIR /app
 COPY --from=builder /app/client /app/eftepcli
 COPY --from=builder /app/eftepd /app/eftepd
 
-
 # Expose the port the app runs on, if necessary
 EXPOSE 8080 8081
 

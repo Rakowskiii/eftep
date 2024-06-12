@@ -16,8 +16,6 @@ func handlePutFile(ctx context.Context, client int, dataLen int) {
 	filename := make([]byte, dataLen)
 	commons.ReadFull(client, filename)
 
-	log.Info(ctx, "put_file", string(filename))
-
 	// Create the file
 	file, err := os.Create(config.WORKDIR + "/" + string(filename))
 	if err != nil {
@@ -50,6 +48,8 @@ func handlePutFile(ctx context.Context, client int, dataLen int) {
 		file.Write(buf[:n])
 		fileLen -= commons.Min(uint32(n), fileLen)
 	}
+
+	log.Info(ctx, "put_file", string(filename))
 
 	// Send a success message to the client
 	sendMessage(ctx, client, []byte("File uploaded successfully"))

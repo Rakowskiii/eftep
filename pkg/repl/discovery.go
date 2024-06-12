@@ -58,6 +58,7 @@ func handleDiscover() {
 
 	// Listen for responses
 	for {
+		// TODO: Maybe no need to redeclare
 		buf := make([]byte, 4096)
 		n, addr, err := syscall.Recvfrom(socket, buf, 0)
 		if err != nil {
@@ -73,6 +74,7 @@ func handleDiscover() {
 			continue
 		}
 
+		// TODO: Consider version
 		if response[DiscoveryPart] != commons.DISCOVERY_RESPONSE {
 			// Ignore messages that are not discovery responses
 			continue

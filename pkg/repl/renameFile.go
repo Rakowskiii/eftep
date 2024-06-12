@@ -16,6 +16,7 @@ func handleRenameFile(socket int) {
 		fmt.Println("Failed to read filenames")
 		return
 	}
+	// TODO: Verify correct input
 	names := strings.Replace(scanner.Text(), " ", ":", 1)
 
 	if err := sendCommand(socket, commons.RenameFile, []byte(names)); err != nil {

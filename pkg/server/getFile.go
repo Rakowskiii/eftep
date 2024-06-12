@@ -62,4 +62,5 @@ func handleGetFile(ctx context.Context, socket int, dataLen int) {
 
 		fileSize -= commons.Min(uint32(n), uint32(fileSize))
 	}
+	log.Info(ctx, "file_sent", string(filename))
 }

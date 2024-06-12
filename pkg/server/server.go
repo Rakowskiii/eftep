@@ -13,6 +13,7 @@ func HandleClient(ctx context.Context, client int) {
 
 	for {
 		// Read the 5-byte header
+		// The first byte is the command, the next 4 bytes are the data length
 		command, dataLen, err := readHeader(client)
 		if err != nil {
 			log.Error(ctx, "reading header", err)

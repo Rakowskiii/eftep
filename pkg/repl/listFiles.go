@@ -17,8 +17,8 @@ func handleListDir(socket int) {
 		fmt.Println("Failed to read response from server:", err)
 		return
 	}
-
 	size := binary.BigEndian.Uint32(responseSize)
+
 	response := make([]byte, size)
 	commons.ReadFull(socket, response)
 

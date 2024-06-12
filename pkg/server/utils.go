@@ -45,6 +45,7 @@ func sendMessage(ctx context.Context, socket int, message []byte) {
 
 const charset = "abcdefghijklmnopqrstuvwxyz0123456789"
 
+// TODO: Read into this
 func init() {
 	rand.Seed(time.Now().UnixNano())
 }

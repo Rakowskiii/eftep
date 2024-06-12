@@ -12,6 +12,7 @@ func handleListDir(ctx context.Context, socket int) {
 	files, err := os.ReadDir(config.WORKDIR)
 	if err != nil {
 		log.Error(ctx, "reading directory", err)
+		// TODO: Change the error to status codes
 		sendMessage(ctx, socket, []byte("Failed to list files"))
 		return
 	}
@@ -22,7 +23,6 @@ func handleListDir(ctx context.Context, socket int) {
 	var filenames []byte
 	for _, file := range files {
 		filenames = append(filenames, []byte(file.Name()+" ")...)
-		filenames = append(filenames, 0)
 	}
 
 	// Send the length of the filenames list

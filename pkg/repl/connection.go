@@ -9,7 +9,6 @@ import (
 )
 
 func connect(ip [4]byte, port int) {
-
 	if err := setupSocket(ip, port); err != nil {
 		fmt.Println("Failed to connect to server:", err)
 		return
@@ -118,6 +117,8 @@ func setupSocket(ip [4]byte, port int) error {
 		Addr: ip,
 		Port: port,
 	}
+
+	// Bind intentionally ommited
 
 	// Connect to the server (binds to the first available port)
 	if err := syscall.Connect(socket, sockaddr); err != nil {

@@ -13,8 +13,6 @@ func handleDeleteFile(ctx context.Context, client int, dataLen int) {
 	filename := make([]byte, dataLen)
 	commons.ReadFull(client, filename)
 
-	log.Info(ctx, "delete_file", string(filename))
-
 	// Delete the file
 	err := os.Remove(config.WORKDIR + "/" + string(filename))
 	if err != nil {
@@ -22,6 +20,8 @@ func handleDeleteFile(ctx context.Context, client int, dataLen int) {
 		sendMessage(ctx, client, []byte("Failed to delete file. Check if the file exists"))
 		return
 	}
+
+	log.Info(ctx, "delete_file", string(filename))
 
 	// Send a success message to the client
 	sendMessage(ctx, client, []byte("File deleted successfully"))

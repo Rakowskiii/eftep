@@ -72,9 +72,10 @@ func handleFileUpload(socket int) {
 		}
 
 		sent += x
-		fmt.Printf("Sending (%s): [%d/%d];\n", filename, sent, size)
+		// TODO: Verify
+		fmt.Printf("Sending (%s): [%d/%d];\r", filename, sent, size)
 	}
-	fmt.Println("File upload complete, waiting for server response")
+	fmt.Println("\nFile upload complete, waiting for server response")
 
 	// Read the response from the server
 	handleResponse(socket)

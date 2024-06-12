@@ -16,6 +16,7 @@ func DiscoveryService(name string) {
 	ServiceName = name
 	ctx := context.WithValue(context.Background(), log.SessionIDKey, "discovery")
 	log.Info(ctx, "discovery", fmt.Sprintf("starting the service with name %s", ServiceName))
+
 	socket := setupSocket(ctx)
 
 	defer syscall.Close(socket)

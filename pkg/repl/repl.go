@@ -8,6 +8,8 @@ import (
 	"strings"
 )
 
+const VERSION = "0.1.0"
+
 var Socket int
 var CurrentConnection string
 
@@ -30,7 +32,7 @@ func Run() {
 		os.Mkdir(config.DOWNLOAD_DIR, 0755)
 	}
 
-	fmt.Println("Eftep Repl -- v0.1")
+	fmt.Printf("Eftep Repl -- %s\n", VERSION)
 	for {
 		command, err := awaitCommand()
 		if err != nil {
